@@ -42,11 +42,6 @@ public class AdminSystemUserController extends CURDBaseController {
         this.userService = userService;
     }
 
-    @GetMapping("/useropent")
-    public String userOpent(){
-        return render("system/user/useropent");
-    }
-
     @GetMapping("/list")
     @RequiresPermissions("system_user_view")
     public String index() {
@@ -56,7 +51,7 @@ public class AdminSystemUserController extends CURDBaseController {
 
     @GetMapping("/list/{userId}/edit")
     @PageViewHandleError
-    @RequiresPermissions("system_user_update")
+    @RequiresPermissions("system_user_view")
     public String edit( ModelMap modelMap, @PathVariable Integer userId) throws PostResourceException {
         UserDTO user = userService.selectUserById(userId);
         List<UserRole> userRoles = userRoleService.selectUserRoleById(userId);
@@ -78,7 +73,7 @@ public class AdminSystemUserController extends CURDBaseController {
 
 
     @GetMapping("/list/add")
-    @RequiresPermissions("system_user_add")
+    @RequiresPermissions("system_user_view")
     @PageViewHandleError
     public String add(ModelMap modelMap) {
         modelMap.addAttribute("roles", roleService.listAll());

@@ -47,7 +47,7 @@ public class AdminSystemRoleController extends CURDBaseController {
 
 
     @GetMapping("/list/add")
-    @RequiresPermissions("system_role_add")
+    @RequiresPermissions("system_role_view")
     public String add(HttpSession httpSession, ModelMap modelMap) {
         return render("system/role/add");
     }
@@ -55,7 +55,7 @@ public class AdminSystemRoleController extends CURDBaseController {
 
     @GetMapping("/list/edit/{id}")
     @PageViewHandleError
-    @RequiresPermissions("system_role_update")
+    @RequiresPermissions("system_role_view")
     public String edit(ModelMap modelMap, @PathVariable Integer id) throws PostResourceException {
         Role role = roleService.selectById(id);
         if (role == null) throw new PostResourceException("未找到角色");

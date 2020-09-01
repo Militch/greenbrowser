@@ -2,6 +2,7 @@ package com.esiran.greenadmin.admin.controller;
 
 
 import com.esiran.greenadmin.admin.entity.UsernamePasswordInputDTO;
+import com.esiran.greenadmin.common.annotation.HandleErrorMessage;
 import com.esiran.greenadmin.framework.annotation.PageViewHandleError;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -35,6 +36,7 @@ public class AdminController extends CURDBaseController {
     }
 
     @GetMapping("/login")
+    @PageViewHandleError
     public String login() {
         return render("login");
     }
