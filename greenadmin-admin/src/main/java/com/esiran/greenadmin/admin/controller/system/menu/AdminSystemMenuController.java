@@ -52,7 +52,7 @@ public class AdminSystemMenuController extends CURDBaseController {
     }
 
     @GetMapping("/list/{menuId}/edit")
-    @RequiresPermissions("system_role_view")
+    @RequiresPermissions("system_role_update")
     public String edit(HttpSession httpSession, ModelMap modelMap, @PathVariable Long menuId) throws APIException {
         List<APIError> apiErrors = (List<APIError>) httpSession.getAttribute("errors");
         modelMap.addAttribute("errors", apiErrors);
@@ -84,7 +84,7 @@ public class AdminSystemMenuController extends CURDBaseController {
 
 
     @GetMapping("/add")
-    @RequiresPermissions("system_role_view")
+    @RequiresPermissions("system_role_add")
     public String add(HttpSession httpSession, ModelMap modelMap) {
         List<APIError> apiErrors = (List<APIError>) httpSession.getAttribute("errors");
         modelMap.addAttribute("errors", apiErrors);
