@@ -42,11 +42,6 @@ public class AdminSystemUserController extends CURDBaseController {
         this.userService = userService;
     }
 
-    @GetMapping("/useropent")
-    public String userOpent(){
-        return render("system/user/useropent");
-    }
-
     @GetMapping("/list")
     @RequiresPermissions("system_user_view")
     public String index() {
