@@ -13,8 +13,8 @@
         <module>greenadmin-generator</module>
         <module>greenadmin-common</module>
         <module>greenadmin-system</module>
-        <module>greenadmin-openapi</module>
         <module>greenadmin-framework</module>
+        <module>greenadmin-web</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
