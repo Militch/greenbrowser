@@ -13,16 +13,8 @@ import java.util.concurrent.Executors;
 @Configuration
 @EnableAsync
 public class SpringAsyncConfig {
-    private static final Logger logger = LoggerFactory.getLogger(BackendAsyncTask.class);
-
-//    @Override
-//    public Executor getAsyncExecutor() {
-//        logger.info("Initial async executor");
-//        return new ThreadPoolTaskExecutor();
-//    }
     @Bean
     public Executor taskExecutor() {
-        logger.info("Initial async executor");
         return Executors.newCachedThreadPool();
     }
 }

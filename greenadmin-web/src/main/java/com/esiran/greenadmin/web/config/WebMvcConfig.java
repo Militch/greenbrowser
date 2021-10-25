@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
     private static final Logger logger = LoggerFactory.getLogger(BackendAsyncTask.class);
+
     @Bean
     public ObjectMapper objectMapper(){
         logger.info("Initializing object mapper");
