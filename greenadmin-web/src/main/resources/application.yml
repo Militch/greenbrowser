@@ -11,3 +11,7 @@ spring:
     active: dev
   mvc:
     static-path-pattern: /**
+
+#mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

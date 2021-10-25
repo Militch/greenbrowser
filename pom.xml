@@ -9,12 +9,9 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>greenadmin-admin</module>
-        <module>greenadmin-generator</module>
         <module>greenadmin-common</module>
-        <module>greenadmin-system</module>
-        <module>greenadmin-framework</module>
         <module>greenadmin-web</module>
+        <module>greenadmin-chain</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -79,24 +76,8 @@
             </dependency>
             <dependency>
                 <groupId>com.esiran</groupId>
-                <artifactId>greenadmin-system</artifactId>
+                <artifactId>greenadmin-chain</artifactId>
                 <version>${greenadmin.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.esiran</groupId>
-                <artifactId>greenadmin-openapi</artifactId>
-                <version>${greenadmin.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.esiran</groupId>
-                <artifactId>greenadmin-framework</artifactId>
-                <version>${greenadmin.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-generator</artifactId>
-                <version>${mybatis-plus.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.freemarker</groupId>
@@ -170,11 +151,6 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.kafka</groupId>
-                <artifactId>spring-kafka</artifactId>
-                <version>${spring-kafka.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
