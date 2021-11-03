@@ -2,14 +2,19 @@ package com.esiran.greenadmin.chain.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.esiran.greenadmin.chain.entity.*;
 import com.esiran.greenadmin.chain.service.*;
 import org.apache.ibatis.transaction.Transaction;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +27,10 @@ public class BlockChainServiceImpl implements IBlockChainService {
     private final IBlockHeaderService headerService;
     private final IBlockTxService blockTxService;
     private final ITxReceiptService receiptService;
+    private static final ModelMapper mp = new ModelMapper();
+    static {
+        mp.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+    }
     private BlockHeader head;
     public BlockChainServiceImpl(
             IHeadIndexService headIndexService, IBlockHeaderService headerService,
@@ -145,7 +154,6 @@ public class BlockChainServiceImpl implements IBlockChainService {
         String nextPrevHash = nextHeader.getHashPrevBlock();
         if (nextHeader.getHeight() > head.getHeight()){
             if (!headHash.equals(nextPrevHash)){
-                log.info("//回滚-----");
                 this.reorg(headBlock, block);
             }
             this.head = nextHeader;
@@ -196,6 +204,9 @@ public class BlockChainServiceImpl implements IBlockChainService {
         List<TxReceipt> allReceipts = new ArrayList<>();
         for (BlockTx tx : txs){
             TxReceipt re = receiptService.getReceiptByTxHash(tx.getHash());
+            if (re == null){
+                continue;
+            }
             allReceipts.add(re);
         }
         block.setReceipts(allReceipts);
@@ -203,9 +214,102 @@ public class BlockChainServiceImpl implements IBlockChainService {
     }
 
     @Override
+    public BlockDTO getBlockDTOByHash(String hash) {
+        BlockHeader header = getBlockHeaderByHash(hash);
+        if (header == null){
+            return null;
+        }
+        BlockDTO blockDTO = new BlockDTO();
+        blockDTO.setHeader(header);
+        List<BlockTx> txs = blockTxService.listTxsByBlockHash(hash);
+        List<BlockTxDTO> txDTOS = new ArrayList<>();
+        for (BlockTx tx : txs){
+            BlockTxDTO txDTO = mp.map(tx, BlockTxDTO.class);
+            TxReceipt re = receiptService.getReceiptByTxHash(tx.getHash());
+            if (re == null){
+                txDTOS.add(txDTO);
+                continue;
+            }
+            BigInteger gasUsed = new BigInteger(re.getGasUsed());
+            BigInteger gasPrice = new BigInteger(tx.getGasPrice());
+            BigInteger gasFee = gasUsed.multiply(gasPrice);
+            txDTO.setGasFee(gasFee.toString(10));
+            txDTO.setGasUsed(re.getGasUsed());
+            txDTO.setStatus(re.getStatus());
+            txDTOS.add(txDTO);
+        }
+        blockDTO.setTransactions(txDTOS);
+        return blockDTO;
+    }
+
+    @Override
+    public BlockTxDTO getTxByHash(String hash) {
+        Wrapper<BlockTx> query = new LambdaQueryWrapper<BlockTx>()
+                .eq(BlockTx::getHash, hash);
+        BlockTx blockTx = blockTxService.getOne(query);
+        if (blockTx == null){
+            return null;
+        }
+        BlockTxDTO dto = mp.map(blockTx, BlockTxDTO.class);
+        TxReceipt txReceipt = receiptService.getReceiptByTxHash(hash);
+        if (txReceipt == null){
+            return dto;
+        }
+        BigInteger gasUsed = new BigInteger(txReceipt.getGasUsed());
+        BigInteger gasPrice = new BigInteger(dto.getGasPrice());
+        BigInteger gasFee = gasUsed.multiply(gasPrice);
+        dto.setGasFee(gasFee.toString(10));
+        dto.setGasUsed(txReceipt.getGasUsed());
+        dto.setStatus(txReceipt.getStatus());
+        return dto;
+    }
+
+    @Override
     public BlockHeader getBlockHeaderByHash(String hash) {
         Wrapper<BlockHeader> query = new LambdaQueryWrapper<BlockHeader>()
                 .eq(BlockHeader::getHash, hash);
         return headerService.getOne(query);
+    }
+
+    @Override
+    public LatestData getLatestData() {
+        Wrapper<BlockHeader> blockQuery = new LambdaQueryWrapper<BlockHeader>()
+                .orderByDesc(BlockHeader::getHeight).last("LIMIT 10");
+        List<BlockHeader> headers = headerService.list(blockQuery);
+        Wrapper<BlockTx> txQuery = new LambdaQueryWrapper<BlockTx>()
+                .orderByDesc(BlockTx::getTimestamp).last("LIMIT 10");
+        List<BlockTx> txes = blockTxService.list(txQuery);
+        LatestData latestData = new LatestData();
+        latestData.setBlocks(headers);
+        latestData.setTxs(txes);
+        return latestData;
+    }
+
+    @Override
+    public Page<BlockHeader> getBlockHeadersByPage(Page<BlockHeader> pg) {
+        Wrapper<BlockHeader> blockQuery = new LambdaQueryWrapper<BlockHeader>()
+                .orderByDesc(BlockHeader::getHeight);
+        return headerService.page(pg, blockQuery);
+    }
+
+    @Override
+    public IPage<BlockTxDTO> getTxsByPage(Page<BlockTx> pg) {
+        Wrapper<BlockTx> blockTxWrapper = new LambdaQueryWrapper<BlockTx>()
+                .orderByDesc(BlockTx::getTimestamp);
+        IPage<BlockTx> p = blockTxService.page(pg, blockTxWrapper);
+        return p.convert((BlockTx tx)-> {
+            BlockTxDTO dto = mp.map(tx, BlockTxDTO.class);
+            TxReceipt txReceipt = receiptService.getReceiptByTxHash(tx.getHash());
+            if (txReceipt == null){
+                return dto;
+            }
+            BigInteger gasUsed = new BigInteger(txReceipt.getGasUsed());
+            BigInteger gasPrice = new BigInteger(dto.getGasPrice());
+            BigInteger gasFee = gasUsed.multiply(gasPrice);
+            dto.setGasFee(gasFee.toString(10));
+            dto.setGasUsed(txReceipt.getGasUsed());
+            dto.setStatus(txReceipt.getStatus());
+            return dto;
+        });
     }
 }

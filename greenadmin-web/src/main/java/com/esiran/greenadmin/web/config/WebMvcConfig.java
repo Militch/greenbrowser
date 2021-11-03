@@ -1,5 +1,7 @@
 package com.esiran.greenadmin.web.config;
 
+import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.pagination.optimize.JsqlParserCountOptimize;
 import com.esiran.greenadmin.web.tasks.BackendAsyncTask;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.time.LocalDateTime;
@@ -34,5 +38,21 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         objectMapper.registerModule(javaTimeModule).registerModule(new ParameterNamesModule());
         return objectMapper;
+    }
+
+    @Bean
+    public PaginationInterceptor paginationInterceptor() {
+        PaginationInterceptor paginationInterceptor = new PaginationInterceptor();
+        paginationInterceptor.setCountSqlParser(new JsqlParserCountOptimize(true));
+        return paginationInterceptor;
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("*")
+                .allowCredentials(true)
+                .allowedMethods("*")
+                .maxAge(3600);
     }
 }

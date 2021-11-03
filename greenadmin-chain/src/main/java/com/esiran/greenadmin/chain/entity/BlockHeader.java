@@ -58,9 +58,9 @@ public class BlockHeader implements Serializable {
 
     private String gasUsed;
 
-    private Integer bits;
+    private Long bits;
 
     private Long nonce;
-
+    private Integer txCount;
 
 }

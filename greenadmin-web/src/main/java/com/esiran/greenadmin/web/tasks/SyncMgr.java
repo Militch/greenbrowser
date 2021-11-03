@@ -1,5 +1,6 @@
 package com.esiran.greenadmin.web.tasks;
 
+import com.esiran.greenadmin.chain.entity.TxReceipt;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -7,16 +8,20 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.xfs.libxfs4j.entity.Block;
+import tech.xfs.libxfs4j.entity.Receipt;
+import tech.xfs.libxfs4j.entity.Transaction;
 import tech.xfs.libxfs4j.io.Chan;
 import tech.xfs.libxfs4j.p2p.DataPacket;
 import tech.xfs.libxfs4j.p2p.Peer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 class HashesFromNumberParams {
     private long from;
@@ -103,8 +108,7 @@ class HashesPacket extends DataPacket {
             return;
         }
         String datajson = new String(raw, StandardCharsets.UTF_8);
-        List<String> ns = g.fromJson(datajson, new TypeToken<List<String>>(){}.getType());
-        this.hashes = ns;
+        this.hashes = g.fromJson(datajson, new TypeToken<List<String>>(){}.getType());
     }
 
     public List<String> getHashes() {
@@ -146,6 +150,68 @@ class BlockHashesPacket extends DataPacket {
 }
 
 
+class ReceiptsReqPacket extends DataPacket {
+    private static final int DEFAULT_VERSION = 1;
+    private static final Gson g = new GsonBuilder().create();
+    private List<String> hashes;
+    @Override
+    public int getType() {
+        return 12;
+    }
+    @Override
+    public int getVersion() {
+        return DEFAULT_VERSION;
+    }
+    @Override
+    public byte[] getDataBytes() {
+        if (hashes == null || hashes.size() <= 0){
+            return new byte[0];
+        }
+        String jsonString = g.toJson(hashes);
+        return jsonString.getBytes(StandardCharsets.UTF_8);
+    }
+    @Override
+    public void decode(byte[] raw) throws Exception {}
+
+    public List<String> getHashes() {
+        return hashes;
+    }
+
+    public void setHashes(List<String> hashes) {
+        this.hashes = hashes;
+    }
+}
+
+class ReceiptsDataPacket extends DataPacket {
+    private static final int DEFAULT_VERSION = 1;
+    private static final Gson g = new GsonBuilder().create();
+    private List<Receipt> receipts;
+    @Override
+    public int getType() {
+        return 13;
+    }
+    @Override
+    public int getVersion() {
+        return DEFAULT_VERSION;
+    }
+    @Override
+    public byte[] getDataBytes() {
+        return new byte[0];
+    }
+    @Override
+    public void decode(byte[] raw) throws Exception {
+        if (raw == null){
+            return;
+        }
+        String datajson = new String(raw, StandardCharsets.UTF_8);
+        this.receipts = g.fromJson(datajson, new TypeToken<List<Receipt>>(){}.getType());
+    }
+
+    public List<Receipt> getReceipts() {
+        return receipts;
+    }
+}
+
 class BlocksPacket extends DataPacket {
     private static final int DEFAULT_VERSION = 1;
     private static final Gson g = new GsonBuilder().create();
@@ -181,16 +247,19 @@ public abstract class SyncMgr extends TimerTask{
     private static final int MESSAGE_TYPE_GET_BLOCK = 8;
     private static final int MESSAGE_TYPE_BLOCKS = 9;
     private static final int MESSAGE_TYPE_NEW_BLOCK = 10;
+    private static final int MESSAGE_TYPE_RECEIPTS = 13;
     private static final long MAX_HASH_FETCH_NUMBER = 512;
     private final Peer peer;
     private final Timer syncerTimer = new Timer();
 
     private final Chan<HashesPacket> hashesPacketChan;
     private final Chan<BlocksPacket> blocksPacketChan;
+    private final Chan<ReceiptsDataPacket> receiptsDataPacketChan;
     public SyncMgr(Peer peer) {
         this.peer = peer;
         hashesPacketChan = new Chan<>();
         blocksPacketChan = new Chan<>();
+        receiptsDataPacketChan = new Chan<>();
         new Thread(this::readLoop).start();
     }
 
@@ -214,6 +283,10 @@ public abstract class SyncMgr extends TimerTask{
                         blocksPacket.decode(dataBytes);
                         blocksPacketChan.put(blocksPacket);
                         break;
+                    case MESSAGE_TYPE_RECEIPTS:
+                        ReceiptsDataPacket dataPacket = new ReceiptsDataPacket();
+                        dataPacket.decode(dataBytes);
+                        receiptsDataPacketChan.put(dataPacket);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -243,6 +316,27 @@ public abstract class SyncMgr extends TimerTask{
         List<Block> blocks = packet.getBlocks();
         if (blocks == null || blocks.size() == 0){
             return;
+        }
+        for (Block block : blocks){
+            if (block.getTransactions() == null || block.getTransactions().size() == 0){
+                continue;
+            }
+            List<String> txhashes = new ArrayList<>();
+            for (Transaction tx : block.getTransactions()){
+                txhashes.add(tx.getHash());
+            }
+            ReceiptsReqPacket reqPacket = new ReceiptsReqPacket();
+            reqPacket.setHashes(txhashes);
+            new Thread(()->{
+                try {
+                    this.peer.writePacket(reqPacket);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+            ReceiptsDataPacket receiptsPacket = receiptsDataPacketChan.takeTimeout(5000);
+            List<Receipt> receipts = receiptsPacket.getReceipts();
+            block.setReceipts(receipts);
         }
         insertBlocksToChain(blocks);
     }
@@ -338,6 +432,7 @@ public abstract class SyncMgr extends TimerTask{
         try {
             this.synchronise();
         }catch (Exception e){
+            e.printStackTrace();
         }
 
     }

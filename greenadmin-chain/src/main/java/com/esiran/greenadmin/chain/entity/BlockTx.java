@@ -30,8 +30,11 @@ public class BlockTx implements Serializable {
     private Integer id;
 
     private String blockHash;
+    private Long blockHeight;
 
     private Integer version;
+    @TableField("`from`")
+    private String from;
     @TableField("`to`")
     private String to;
 

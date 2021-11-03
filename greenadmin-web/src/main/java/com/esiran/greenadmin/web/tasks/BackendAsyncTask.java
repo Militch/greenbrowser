@@ -458,9 +458,9 @@ public class BackendAsyncTask {
     public void run() throws Exception {
         ECKeyPair keyPair = Crypto.genKey();
         NodeId nodeId = NodeId.pubKey2NodeId(keyPair.getPublicKey());
-        String remoteNodeUri = "xfsnode://127.0.0.1:9002/?id=4f3c686f0a448704d890ea479b9e4e34fce0d001d68dde26d42ecc56d30054c2fbd8d3cce8618f65e641b454f2876217cc54a01668e14775ad5a21e8635628e1";
+        String remoteNodeUri = "xfsnode://127.0.0.1:9002/?id=20f4948244d8ccaa055b4a668e499d8f33bdcd8eeb360e0046c3e47edf1f1dccfa3408c3c1a88b169e9fabd717d25b47dbc34afc7e68a21719fe886defd3a867";
         Node remoteNode = Node.parseNode(remoteNodeUri);
-        ExecutorService tpool = Executors.newCachedThreadPool();;
+        ExecutorService tpool = Executors.newCachedThreadPool();
         P2PNodeClient client = new P2PNodeClient(nodeId, remoteNode){
             @Override
             BlockHeader chainHeadHeader() {
@@ -511,12 +511,13 @@ public class BackendAsyncTask {
         return target;
     }
 
-    private static BlockTx coverTx(Transaction tx, String blockhash){
+    private static BlockTx coverTx(Transaction tx, String blockhash, Long blockHeight){
         if (tx == null){
             return null;
         }
         BlockTx target = new BlockTx();
         target.setVersion(tx.getVersion());
+        target.setFrom(tx.getFrom());
         target.setTo(tx.getTo());
         target.setGasPrice(tx.getGas_price());
         target.setGasLimit(tx.getGas_limit());
@@ -527,6 +528,7 @@ public class BackendAsyncTask {
         target.setSignature(tx.getSignature());
         target.setHash(tx.getHash());
         target.setBlockHash(blockhash);
+        target.setBlockHeight(blockHeight);
         return target;
     }
     private static TxReceipt coverReceipt(Receipt receipt){
@@ -546,10 +548,16 @@ public class BackendAsyncTask {
         }
         com.esiran.greenadmin.chain.entity.Block target = new com.esiran.greenadmin.chain.entity.Block();
         tech.xfs.libxfs4j.entity.BlockHeader header = block.getHeader();
-        target.setHeader(coverBlockHeader(header));
+        BlockHeader bh = coverBlockHeader(header);
+        if (block.getTransactions() != null){
+            bh.setTxCount(block.getTransactions().size());
+        }else {
+            bh.setTxCount(0);
+        }
+        target.setHeader(bh);
         if (block.getTransactions() != null && block.getTransactions().size() > 0){
             target.setTransactions(block.getTransactions().stream()
-                    .map((tx)-> BackendAsyncTask.coverTx(tx, block.getHeader().getHash()))
+                    .map((tx)-> BackendAsyncTask.coverTx(tx, block.getHeader().getHash(), block.getHeader().getHeight()))
                     .collect(Collectors.toList()));
         }
         if (block.getReceipts() != null  && block.getReceipts().size() > 0){

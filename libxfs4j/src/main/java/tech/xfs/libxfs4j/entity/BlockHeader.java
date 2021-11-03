@@ -13,7 +13,7 @@ public class BlockHeader {
     private String receipts_root;
     private String gas_limit;
     private String gas_used;
-    private Integer bits;
+    private Long bits;
     private Long nonce;
     private String hash;
     public Long getHeight() {
@@ -96,11 +96,11 @@ public class BlockHeader {
         this.gas_used = gas_used;
     }
 
-    public Integer getBits() {
+    public Long getBits() {
         return bits;
     }
 
-    public void setBits(Integer bits) {
+    public void setBits(Long bits) {
         this.bits = bits;
     }
 

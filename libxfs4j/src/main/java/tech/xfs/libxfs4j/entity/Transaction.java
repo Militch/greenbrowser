@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 public class Transaction {
     private Integer version;
     private String hash;
+    private String from;
     private String to;
-
     private String gas_price;
 
     private String gas_limit;
@@ -35,6 +35,14 @@ public class Transaction {
 
     public void setTo(String to) {
         this.to = to;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
     }
 
     public String getGas_price() {
