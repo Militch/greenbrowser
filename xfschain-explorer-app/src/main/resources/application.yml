@@ -1,0 +1,21 @@
+server:
+  port: 8083
+spring:
+  thymeleaf:
+    check-template: false
+    check-template-location: false
+  profiles:
+    active: dev
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/greenadmin?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=GMT%2B8
+    username: greenadmin
+    password: greenadmin
+    initialization-mode: always
+    schema: classpath:schema.sql
+    continue-on-error: false
+
+
+xfsgo:
+  network-id: 1
+  jsonrpc-http-url: "http://127.0.0.1:9019"
