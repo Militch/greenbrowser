@@ -21,24 +21,17 @@
     </parent>
     <properties>
         <java.version>1.8</java.version>
-        <spring-boot.version>2.2.0.RELEASE</spring-boot.version>
-        <spring.version>5.2.0.RELEASE</spring.version>
+        <spring-boot.version>2.6.2</spring-boot.version>
         <greenadmin.version>1.0-SNAPSHOT</greenadmin.version>
         <mybatis-plus.version>3.3.1.tmp</mybatis-plus.version>
-        <freemarker.version>2.3.30</freemarker.version>
         <mysql-connector.version>8.0.11</mysql-connector.version>
-        <slf4j-api.version>1.7.30</slf4j-api.version>
         <lombok.version>1.18.12</lombok.version>
         <gson.version>2.8.6</gson.version>
         <okhttp.version>4.1.0</okhttp.version>
-        <weixin-java.version>3.5.0</weixin-java.version>
-        <shiro.version>1.5.1</shiro.version>
         <modelmapper.version>2.3.0</modelmapper.version>
         <junit.version>4.12</junit.version>
-        <swagger2.version>2.9.2</swagger2.version>
         <shiro.version>1.5.2</shiro.version>
         <guava.version>29.0-jre</guava.version>
-        <spring-kafka.version>2.3.8.RELEASE</spring-kafka.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -50,19 +43,9 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-content</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger2</artifactId>
-                <version>${swagger2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger-ui</artifactId>
-                <version>${swagger2.version}</version>
+                <groupId>tech.xfs</groupId>
+                <artifactId>libxfs4j</artifactId>
+                <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -78,26 +61,6 @@
                 <groupId>com.esiran</groupId>
                 <artifactId>greenadmin-chain</artifactId>
                 <version>${greenadmin.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.freemarker</groupId>
-                <artifactId>freemarker</artifactId>
-                <version>${freemarker.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.shiro</groupId>
-                <artifactId>shiro-spring-boot-starter</artifactId>
-                <version>${shiro.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${slf4j-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -126,17 +89,6 @@
                 <artifactId>okhttp</artifactId>
                 <version>${okhttp.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>com.github.binarywang</groupId>
-                <artifactId>weixin-java-pay</artifactId>
-                <version>${weixin-java.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.binarywang</groupId>
-                <artifactId>weixin-java-mp</artifactId>
-                <version>${weixin-java.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.apache.shiro</groupId>
                 <artifactId>shiro-spring-boot-web-starter</artifactId>
@@ -151,11 +103,6 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.squareup.retrofit2</groupId>
-                <artifactId>retrofit</artifactId>
-                <version>2.9.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

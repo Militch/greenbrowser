@@ -12,6 +12,6 @@ public class AddressUtilTest {
         String fromAddressText = "aJTobAyvdXeEGW7DHA1Yqc6PaVa2apHdX";
         MyAddress fromAddress = MyAddress.fromString(fromAddressText);
         MyAddress gotAddress = AddressUtil.createAddress(fromAddress, 1);
-        System.out.println(gotAddress.toBase58());
+        assert !fromAddress.toBase58().equals(gotAddress.toBase58());
     }
 }
