@@ -2,15 +2,15 @@ package com.esiran.greenadmin.chain.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.esiran.greenadmin.chain.entity.Block;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.esiran.greenadmin.chain.entity.BlockTx;
 import com.esiran.greenadmin.chain.mapper.BlockTxMapper;
 import com.esiran.greenadmin.chain.service.IBlockTxService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -39,11 +39,13 @@ public class BlockTxServiceImpl extends ServiceImpl<BlockTxMapper, BlockTx> impl
         if (tx == null){
             return;
         }
+        tx.setCreateTime(LocalDateTime.now());
+        tx.setUpdateTime(LocalDateTime.now());
         save(tx);
     }
 
     @Override
-    public void remoteByTxHash(String hash) {
+    public void removeByTxHash(String hash) {
         Wrapper<BlockTx> wrapper = new LambdaQueryWrapper<BlockTx>().eq(BlockTx::getHash, hash);
         this.remove(wrapper);
     }
@@ -51,7 +53,17 @@ public class BlockTxServiceImpl extends ServiceImpl<BlockTxMapper, BlockTx> impl
 
     @Override
     public List<BlockTx> listTxsByBlockHash(String hash) {
-        Wrapper<BlockTx> wrapper = new LambdaQueryWrapper<BlockTx>().eq(BlockTx::getBlockHash, hash);
+        Wrapper<BlockTx> wrapper = new LambdaQueryWrapper<BlockTx>()
+                .eq(BlockTx::getBlockHash, hash)
+                .orderByDesc(BlockTx::getCreateTime);
         return list(wrapper);
+    }
+
+    @Override
+    public IPage<BlockTx> getAddressTxsByPage(Page<BlockTx> pg, String address) {
+        Wrapper<BlockTx> blockTxWrapper = new LambdaQueryWrapper<BlockTx>()
+                .eq(BlockTx::getFrom, address)
+                .orderByDesc(BlockTx::getCreateTime);
+        return page(pg, blockTxWrapper);
     }
 }

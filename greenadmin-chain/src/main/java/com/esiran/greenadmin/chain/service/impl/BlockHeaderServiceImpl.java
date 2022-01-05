@@ -34,8 +34,15 @@ public class BlockHeaderServiceImpl extends ServiceImpl<BlockHeaderMapper, Block
     }
 
     @Override
-    public void remoteByBlockHash(String hash) {
+    public void removeByBlockHash(String hash) {
         Wrapper<BlockHeader> wrapper = new LambdaQueryWrapper<BlockHeader>().eq(BlockHeader::getHash, hash);
         this.remove(wrapper);
+    }
+
+    @Override
+    public BlockHeader getLast() {
+        Wrapper<BlockHeader> wrapper = new LambdaQueryWrapper<BlockHeader>()
+                .orderByDesc(BlockHeader::getHeight).last("limit 1");
+        return this.getOne(wrapper);
     }
 }

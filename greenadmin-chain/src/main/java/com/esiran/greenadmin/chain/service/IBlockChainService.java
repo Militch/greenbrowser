@@ -10,12 +10,13 @@ import java.util.List;
 public interface IBlockChainService {
     void insertBlock(Block block) throws Exception;
     void insertBlocks(List<Block> block) throws Exception;
+    ChainStatus getChainStatus();
     BlockHeader getHeadBlock();
     Block getBlockByHash(String hash);
-    BlockDTO getBlockDTOByHash(String hash);
-    BlockTxDTO getTxByHash(String hash);
     BlockHeader getBlockHeaderByHash(String hash);
     LatestData getLatestData();
     IPage<BlockHeader> getBlockHeadersByPage(Page<BlockHeader> pg);
-    IPage<BlockTxDTO> getTxsByPage(Page<BlockTx> pg);
+    BlockTx getTxByHash(String hash);
+    IPage<BlockTx> getTxsByPage(Page<BlockTx> pg);
+    SearchResult search(String q);
 }

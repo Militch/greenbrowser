@@ -22,7 +22,7 @@ public class TxsController {
     }
 
     @GetMapping
-    public IPage<BlockTxDTO> txs(@RequestParam(required = false,value = "p") Integer page){
+    public IPage<BlockTx> txs(@RequestParam(required = false,value = "p") Integer page){
         if (page == null || page.equals(0)){
             page = 1;
         }
@@ -30,13 +30,13 @@ public class TxsController {
         return chainService.getTxsByPage(pg);
     }
     @GetMapping("/{hash}")
-    public BlockTxDTO tx(@PathVariable String hash) throws Exception {
+    public BlockTx tx(@PathVariable String hash) throws Exception {
         Pattern pattern = Pattern.compile("^0x[0-9A-Za-z]{64}$");
         Matcher m = pattern.matcher(hash);
         if (!m.matches()){
             throw new Exception("err");
         }
-        BlockTxDTO tx = chainService.getTxByHash(hash);
+        BlockTx tx = chainService.getTxByHash(hash);
         if (tx == null){
             throw new Exception("empty data");
         }

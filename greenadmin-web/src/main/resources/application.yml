@@ -1,13 +1,12 @@
 server:
   port: 8083
 
-logging:
-  level:
-    com.github.binarywang.wxpay: error
-    me.chanjar.weixin: error
-
 spring:
   profiles:
     active: dev
   mvc:
     static-path-pattern: /**
+
+xfsgo:
+  network-id: 1
+  jsonrpc-http-url: "http://127.0.0.1:9012"

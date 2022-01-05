@@ -29,13 +29,13 @@ public class BlocksController {
         return chainService.getBlockHeadersByPage(pg);
     }
     @GetMapping("/{hash}")
-    public BlockDTO block(@PathVariable String hash) throws Exception {
+    public Block block(@PathVariable String hash) throws Exception {
         Pattern pattern = Pattern.compile("^0x[0-9A-Za-z]{64}$");
         Matcher m = pattern.matcher(hash);
         if (!m.matches()){
             throw new Exception("err");
         }
-        BlockDTO block = chainService.getBlockDTOByHash(hash);
+        Block block = chainService.getBlockByHash(hash);
         if (block == null){
             throw new Exception("empty data");
         }

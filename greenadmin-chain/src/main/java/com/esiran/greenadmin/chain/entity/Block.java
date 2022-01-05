@@ -8,5 +8,4 @@ import java.util.List;
 public class Block {
     private BlockHeader header;
     private List<BlockTx> transactions;
-    private List<TxReceipt> receipts;
 }

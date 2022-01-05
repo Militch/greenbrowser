@@ -13,5 +13,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IBlockHeaderService extends IService<BlockHeader> {
     void insertBlockHeader(BlockHeader blockHeader);
-    void remoteByBlockHash(String hash);
+    void removeByBlockHash(String hash);
+    BlockHeader getLast();
 }

@@ -1,29 +1,31 @@
 package com.esiran.greenadmin.web.controller;
 
-import com.esiran.greenadmin.chain.entity.LatestData;
+import com.esiran.greenadmin.chain.entity.*;
 import com.esiran.greenadmin.chain.service.IBlockChainService;
-import com.esiran.greenadmin.web.entity.Status;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.math.BigDecimal;
 
 @RestController
 public class HomeController {
-    private final IBlockChainService service;
-
-    public HomeController(IBlockChainService service) {
-        this.service = service;
+    private final IBlockChainService chainService;
+    public HomeController(IBlockChainService chainService) {
+        this.chainService = chainService;
     }
     @GetMapping("/status")
-    public Status status() {
-        Status status = new Status();
-        status.setDifficulty(1L);
-        status.setLatestHeight(1L);
-        status.setBlockReward(1L);
-        return status;
+    public ChainStatus status() {
+        return chainService.getChainStatus();
+    }
+
+    @GetMapping("/search")
+    public SearchResult search(@RequestParam(value = "q") String q){
+        return chainService.search(q);
     }
 
     @GetMapping("/latest")
     public LatestData latest() {
-        return service.getLatestData();
+        return chainService.getLatestData();
     }
 }
