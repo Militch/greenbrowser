@@ -19,4 +19,5 @@ public interface IBlockChainService {
     BlockTx getTxByHash(String hash);
     IPage<BlockTx> getTxsByPage(Page<BlockTx> pg);
     SearchResult search(String q);
+    List<CountByTime> getTransactionCountBy7day();
 }

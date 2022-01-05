@@ -2,6 +2,7 @@ package com.esiran.greenadmin.chain.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.esiran.greenadmin.chain.entity.*;
@@ -25,7 +26,12 @@ import tech.xfs.libxfs4j.util.AddressUtil;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class BlockChainServiceImpl implements IBlockChainService {
@@ -395,22 +401,44 @@ public class BlockChainServiceImpl implements IBlockChainService {
         }
         return total.divide(BigInteger.valueOf(list.size()));
     }
+    @Override
+    public List<CountByTime> getTransactionCountBy7day(){
+        LocalDate weekBeforeToday = LocalDate.now().minusDays(8);
+        List<LocalDate> data = IntStream.rangeClosed(1, 7).mapToObj(weekBeforeToday::plusDays)
+                .collect(Collectors.toList());
+        List<CountByTime> list = new ArrayList<>();
+        for(LocalDate d : data){
+            LocalDateTime min = d.atTime(LocalTime.MIN);
+            LocalDateTime max = min.plusDays(1);
+            LambdaUpdateWrapper<BlockTx> wrapper = new LambdaUpdateWrapper<>();
+            wrapper.ge(BlockTx::getCreateTime,min)
+                    .lt(BlockTx::getCreateTime, max);
+            int count = blockTxService.count(wrapper);
+            CountByTime cbt = new CountByTime();
+            cbt.setTime(min);
+            cbt.setCount(count);
+            list.add(cbt);
+        }
+        return list;
+    }
 
     @Override
     public ChainStatus getChainStatus() {
         BlockHeader bh = getHeadBlock();
+        log.info(bh.toString());
         long blockTime = get24hAvgBlockTime();
         long avgTxsInBlock = get24hAvgTxsInBlock();
         long avgTps = get24hTPS();
         BigInteger avgBlockRewards = get24hBlockRewards();
         int txsCount = blockTxService.count();
         int addressCount = addressService.count();
-        long diff = DifficultyUtil.calcHashesByBits(bh.getBits());
+//        long diff = DifficultyUtil.calcHashesByBits(bh.getBits());
+        BigInteger wl = DifficultyUtil.calcWorkloadByBits(bh.getBits());
         float pow = DifficultyUtil.calcHashRateByBits(bh.getBits());
         ChainStatus status = new ChainStatus();
         status.setLatestHeight(bh.getHeight());
         status.setTransactions((long) txsCount);
-        status.setDifficulty(diff);
+        status.setDifficulty(wl.longValue());
         status.setPower((long) pow);
         status.setAccounts((long) addressCount);
         status.setBlockTime(blockTime);

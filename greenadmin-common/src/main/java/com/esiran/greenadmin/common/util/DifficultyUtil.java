@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class DifficultyUtil {
-    private static final long GENESIS_BITS_TEST_NET = 267386909L;
-    private static final long GENESIS_BITS_MAIN_NET = 4278190109L;
+    private static final long GENESIS_BITS_TEST_NET = 4278190109L;
+    private static final long GENESIS_BITS_MAIN_NET = 267386909L;
     private static final long DEFAULT_GENESIS_BITS = GENESIS_BITS_TEST_NET;
     private static final BigInteger BIG_2 = BigInteger.valueOf(2);
     private static final int INT256 = 256;

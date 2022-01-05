@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 public class HomeController {
@@ -27,5 +28,9 @@ public class HomeController {
     @GetMapping("/latest")
     public LatestData latest() {
         return chainService.getLatestData();
+    }
+    @GetMapping("/tx_count_by_day")
+    public List<CountByTime> txCountByDay() {
+        return chainService.getTransactionCountBy7day();
     }
 }
