@@ -4,14 +4,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.esiran</groupId>
-    <artifactId>greenadmin</artifactId>
+    <groupId>tech.xfs</groupId>
+    <artifactId>xfschain-explorer</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>greenadmin-common</module>
-        <module>greenadmin-web</module>
-        <module>greenadmin-chain</module>
+        <module>xfschain-explorer-core</module>
+        <module>xfschain-explorer-common</module>
+        <module>xfschain-explorer-chain</module>
+        <module>xfschain-explorer-app</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -20,18 +21,18 @@
         <relativePath/>
     </parent>
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>10</java.version>
         <spring-boot.version>2.6.2</spring-boot.version>
-        <greenadmin.version>1.0-SNAPSHOT</greenadmin.version>
+        <application.version>1.0-SNAPSHOT</application.version>
         <mybatis-plus.version>3.3.1.tmp</mybatis-plus.version>
         <mysql-connector.version>8.0.11</mysql-connector.version>
         <lombok.version>1.18.12</lombok.version>
         <gson.version>2.8.6</gson.version>
         <okhttp.version>4.1.0</okhttp.version>
         <modelmapper.version>2.3.0</modelmapper.version>
-        <junit.version>4.12</junit.version>
         <shiro.version>1.5.2</shiro.version>
         <guava.version>29.0-jre</guava.version>
+        <web3j.version>5.0.0</web3j.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -43,24 +44,24 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
+                <groupId>org.web3j</groupId>
+                <artifactId>crypto</artifactId>
+                <version>${web3j.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>tech.xfs</groupId>
-                <artifactId>libxfs4j</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <artifactId>xfschain-explorer-chain</artifactId>
+                <version>${application.version}</version>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
+                <groupId>tech.xfs</groupId>
+                <artifactId>xfschain-explorer-common</artifactId>
+                <version>${application.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.esiran</groupId>
-                <artifactId>greenadmin-common</artifactId>
-                <version>${greenadmin.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.esiran</groupId>
-                <artifactId>greenadmin-chain</artifactId>
-                <version>${greenadmin.version}</version>
+                <groupId>tech.xfs</groupId>
+                <artifactId>xfschain-explorer-core</artifactId>
+                <version>${application.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -71,12 +72,6 @@
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
-            <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>${mysql-connector.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>
