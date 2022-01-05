@@ -21,5 +21,4 @@ public interface IBlockTxService extends IService<BlockTx> {
     void removeByTxHash(String hash);
     List<BlockTx> listTxsByBlockHash(String hash);
     IPage<BlockTx> getAddressTxsByPage(Page<BlockTx> pg, String address);
-//    Integer getCountByAddress()
 }

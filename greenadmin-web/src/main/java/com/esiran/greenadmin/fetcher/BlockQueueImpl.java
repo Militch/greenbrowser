@@ -9,7 +9,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BlockQueueImpl implements BlockQueue{
-    public static final int BLOCK_CACHE_SIZE = 50;
+    public static final int BLOCK_CACHE_SIZE = 512;
     private static final class HashItem {
         private final String hash;
         private final int priority;
@@ -19,7 +19,7 @@ public class BlockQueueImpl implements BlockQueue{
         }
     }
     private static final class BlockItem {
-        private RemoteBlock block;
+        private final RemoteBlock block;
         public BlockItem(RemoteBlock block) {
             this.block = block;
         }

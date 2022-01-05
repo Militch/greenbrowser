@@ -177,16 +177,108 @@ public class BlockChainServiceImpl implements IBlockChainService {
         block.setHeader(bh);
         return block;
     }
+    private boolean isBlockExistsByHash(String hash){
+        return getBlockHeaderByHash(hash) != null;
+    }
+    private static final class OrphanBlock {
+        Block block;
+        LocalDateTime expire;
+    }
+    private static final int ORPHANS_MAX_SIZE = 512;
+    private static final int ORPHANS_CACHE_TIME = 60 * 60;
+    // 孤块池-上级索引
+    private final Map<String,List<OrphanBlock>> prevOrphansIndex = new HashMap<>();
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public synchronized void insertBlock(Block block) throws Exception {
-        if (block == null){ return; }
-        log.debug("Inserting Block: {}", block);
-        BlockHeader old = getBlockHeaderByHash(block.getHeader().getHash());
-        if (old != null){
+    private void addOrphanBlockToPrevIndex(OrphanBlock ob){
+
+        BlockHeader bh = ob.block.getHeader();
+        String prevHash = bh.getHashPrevBlock();
+        List<OrphanBlock> obs = new ArrayList<>();
+        if (prevOrphansIndex.containsKey(prevHash)){
+            obs = prevOrphansIndex.get(prevHash);
+        }
+        obs.add(ob);
+        prevOrphansIndex.put(prevHash, obs);
+    }
+
+    // 孤块池
+    private final Map<String,OrphanBlock> orphans = new HashMap<>();
+    private OrphanBlock oldOrphanBlock;
+    private synchronized void remoteOrphanBlock(OrphanBlock ob){
+        BlockHeader bh = ob.block.getHeader();
+        String current = bh.getHash();
+        // 移除孤块
+        orphans.remove(current);
+        String prevHash = bh.getHashPrevBlock();
+        if (!prevOrphansIndex.containsKey(prevHash)){
             return;
         }
+        // 遍历并移除上级索引池
+        List<OrphanBlock> orphanBlocks = prevOrphansIndex.get(prevHash);
+        orphanBlocks.removeIf((item)-> item.block.getHeader().getHash().equals(current));
+        if (orphanBlocks.size() == 0){
+            prevOrphansIndex.remove(prevHash);
+            return;
+        }
+        prevOrphansIndex.put(prevHash, orphanBlocks);
+    }
+
+    private synchronized void addOrphanBlock(Block b){
+        log.debug("Append block in orphanPool: {}", b);
+        BlockHeader bh = b.getHeader();
+        // 遍历移除过期的孤块
+        for (String key : orphans.keySet()){
+            OrphanBlock ob = orphans.get(key);
+            LocalDateTime now = LocalDateTime.now();
+            if (now.isAfter(ob.expire)){
+                remoteOrphanBlock(ob);
+                continue;
+            }
+            if (oldOrphanBlock == null || ob.expire.isBefore(oldOrphanBlock.expire)){
+                oldOrphanBlock = ob;
+            }
+        }
+        if (orphans.size()+1 > ORPHANS_MAX_SIZE){
+            remoteOrphanBlock(oldOrphanBlock);
+            oldOrphanBlock = null;
+        }
+        // 加入新的孤块
+        OrphanBlock ob = new OrphanBlock();
+        ob.block = b;
+        ob.expire = LocalDateTime.now().plusSeconds(ORPHANS_CACHE_TIME);
+        orphans.put(bh.getHash(), ob);
+        addOrphanBlockToPrevIndex(ob);
+    }
+    private synchronized void processOrphans(String hash) throws Exception {
+//        ArrayList<String> processHashes = new ArrayList<>();
+//        processHashes.add(hash);
+//        for (){
+//
+//        }.
+        // 获取孤块缓存
+        if (!prevOrphansIndex.containsKey(hash)){
+            return;
+        }
+
+        List<OrphanBlock> orphanBlocks = prevOrphansIndex.get(hash);
+        if (orphanBlocks == null){
+            return;
+        }
+        // 处理索引中的孤块
+//        for (int i =0;i<orphanBlocks.size();i++){
+//            OrphanBlock orphanBlock = orphanBlocks.get(i);
+//            remoteOrphanBlock(orphanBlock);
+//            maybeAcceptBlock(orphanBlock.block);
+//        }
+        log.info("Process orphans by hash: {}", hash);
+        for (OrphanBlock orphanBlock : orphanBlocks) {
+            remoteOrphanBlock(orphanBlock);
+            maybeAcceptBlock(orphanBlock.block);
+        }
+
+    }
+
+    private void maybeAcceptBlock(Block block) throws Exception {
         Long blockHeight = block.getHeader().getHeight();
         BlockHeader head = getHeadBlock();
         if (head == null && !blockHeight.equals(0L)){
@@ -210,6 +302,29 @@ public class BlockChainServiceImpl implements IBlockChainService {
         blockTxService.insertTxs(mTxs);
         updateAccountByStateRoot(block.getHeader(), block.getHeader().getCoinbase());
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public synchronized void insertBlock(Block block) throws Exception {
+        if (block == null){ return; }
+        log.debug("Inserting Block: {}", block);
+        if (isBlockExistsByHash(block.getHeader().getHash())){
+            return;
+        }
+        if (orphans.containsKey(block.getHeader().getHash())){
+            return;
+        }
+        Long blockHeight = block.getHeader().getHeight();
+        if (!blockHeight.equals(0L) && !isBlockExistsByHash(block.getHeader().getHashPrevBlock())){
+            addOrphanBlock(block);
+            return;
+        }
+        maybeAcceptBlock(block);
+        processOrphans(block.getHeader().getHash());
+    }
+
+
+
     private void updateAccountByStateRoot(BlockHeader header, String address){
         if (header == null || address == null){
             return;
@@ -353,9 +468,9 @@ public class BlockChainServiceImpl implements IBlockChainService {
         if (blocks == null || blocks.size() == 0){
             return;
         }
+        log.debug("insert blocks: size={}", blocks.size());
         for (Block blk : blocks){
             insertBlock(blk);
-
         }
     }
 
@@ -425,7 +540,6 @@ public class BlockChainServiceImpl implements IBlockChainService {
     @Override
     public ChainStatus getChainStatus() {
         BlockHeader bh = getHeadBlock();
-        log.info(bh.toString());
         long blockTime = get24hAvgBlockTime();
         long avgTxsInBlock = get24hAvgTxsInBlock();
         long avgTps = get24hTPS();

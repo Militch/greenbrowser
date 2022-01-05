@@ -56,16 +56,30 @@ public class BackendAsyncTask {
                 if (blocks.size() == 0){
                     return;
                 }
-//                for (RemoteBlock rb : blocks){
-//                    logger.info(rb.toString());
-//                }
                 List<Block> list = BeanUtils.coverBlocks(blocks);
                 try {
                     chainService.insertBlocks(list);
                 } catch (Exception e) {
-//                  e.printStackTrace();
+                  e.printStackTrace();
                   logger.error("Failed insert blocks: err={}", e.getMessage());
                 }
+            }
+
+            @Override
+            public Runnable insertBlockAsync(List<RemoteBlock> blocks) {
+                return ()->{
+                    if (blocks.size() == 0){
+                        return;
+                    }
+
+                    List<Block> list = BeanUtils.coverBlocks(blocks);
+                    try {
+                        chainService.insertBlocks(list);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        logger.error("Failed insert blocks: err={}", e.getMessage());
+                    }
+                };
             }
         };
         mgr.startSync();

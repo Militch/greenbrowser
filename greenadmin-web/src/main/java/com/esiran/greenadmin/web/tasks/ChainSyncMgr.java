@@ -32,6 +32,7 @@ public abstract class ChainSyncMgr extends TimerTask {
     public abstract NodeStatus nodeStatus();
     public abstract BlockHeader getBlockByHash(String hash);
     public abstract void insertBlock(List<RemoteBlock> blocks);
+    public abstract Runnable insertBlockAsync(List<RemoteBlock> blocks);
     public void startSync(){
         syncerTimer.schedule(this, 0, 10000);
         Thread t = new Thread(processBlockTask());
@@ -48,8 +49,9 @@ public abstract class ChainSyncMgr extends TimerTask {
                         continue;
                     }
                     insertBlock(rbs);
-                    Thread.sleep(1000);
-//                    insertPool.execute(insertBlock(rbs));
+//                    Thread.sleep(1000);
+//                    insertPool.execute(insertBlockAsync(rbs));
+//                    Thread.sleep(2000);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
