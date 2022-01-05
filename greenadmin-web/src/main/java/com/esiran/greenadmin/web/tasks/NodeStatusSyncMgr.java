@@ -46,7 +46,7 @@ public class NodeStatusSyncMgr extends TimerTask {
         try {
             fetchNodeStatus();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 }
