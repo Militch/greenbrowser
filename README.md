@@ -1,5 +1,2 @@
-# GreenPay
-
-## 启动
-
+# XFSCHAIN_EXPLORER
 

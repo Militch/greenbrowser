@@ -26,9 +26,7 @@ import java.time.format.DateTimeFormatter;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
     private static final Logger logger = LoggerFactory.getLogger(BackendAsyncTask.class);
-    private final String jsonrpcHttpUrl;
-    public WebMvcConfig(@Value("${xfsgo.jsonrpc-http-url}") String jsonrpcHttpUrl){
-        this.jsonrpcHttpUrl = jsonrpcHttpUrl;
+    public WebMvcConfig(){
     }
     @Bean
     public ObjectMapper objectMapper(){
@@ -46,8 +44,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public Client rpcCli(){
-        return new HTTPClient(jsonrpcHttpUrl);
+    public Client rpcCli(XFSGOProperties xfsgoProperties){
+        return new HTTPClient(xfsgoProperties.getJsonrpcHttpUrl());
     }
     @Bean
     public PaginationInterceptor paginationInterceptor() {
@@ -56,10 +54,15 @@ public class WebMvcConfig implements WebMvcConfigurer {
         return paginationInterceptor;
     }
 
+    @Bean
+    public XFSGOProperties xfsgoProperties(){
+        return new XFSGOProperties();
+    }
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")
+                .allowedOriginPatterns("*")
                 .allowCredentials(true)
                 .allowedMethods("*")
                 .maxAge(3600);
