@@ -38,7 +38,7 @@ import java.util.stream.IntStream;
 public class BlockChainServiceImpl implements IBlockChainService {
     private static final Logger log = LoggerFactory.getLogger(BlockChainServiceImpl.class);
 
-    private static final long BLOCK_REWARDS_TEST_NET = 17;
+    private static final long BLOCK_REWARDS_TEST_NET = 14;
     private static final long BLOCK_REWARDS_DEFAULT = BLOCK_REWARDS_TEST_NET;
     private final IBlockHeaderService headerService;
     private final IBlockTxService blockTxService;
