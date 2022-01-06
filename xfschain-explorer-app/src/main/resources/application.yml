@@ -6,9 +6,9 @@ spring:
     check-template-location: false
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/greenadmin?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=GMT%2B8
-    username: greenadmin
-    password: greenadmin
+    url: jdbc:mysql://localhost:3306/xfschain?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=GMT%2B8
+    username: xfschain
+    password: xfschain
     initialization-mode: always
     schema: classpath:schema.sql
     continue-on-error: false

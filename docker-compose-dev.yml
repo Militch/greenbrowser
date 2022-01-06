@@ -6,10 +6,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=greenadmin
-      - MYSQL_DATABASE=greenadmin
-      - MYSQL_USER=greenadmin
-      - MYSQL_PASSWORD=greenadmin
+      - MYSQL_ROOT_PASSWORD=xfschain
+      - MYSQL_DATABASE=xfschain
+      - MYSQL_USER=xfschain
+      - MYSQL_PASSWORD=xfschain
       - TZ=Asia/Shanghai
     command:
       --default_authentication_plugin=mysql_native_password
